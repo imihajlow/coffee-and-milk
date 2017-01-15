@@ -1,0 +1,94 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script type="text/javascript" async src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+<script>
+    var coffee = 0.5;
+    var time = 0.5;
+    $( function() {
+        $( "#slider-coffee" ).slider({
+          range: "min",
+          value: 50,
+          min: 0,
+          max: 100,
+          slide: function( event, ui ) {
+            coffee = ui.value / 100;
+            calculate();
+          }
+        });
+
+        $( "#slider-time" ).slider({
+          range: "min",
+          value: 50,
+          min: 0,
+          max: 100,
+          slide: function( event, ui ) {
+            time = ui.value / 100;
+            calculate();
+          }
+        });
+        
+        calculate();
+    } );
+
+    function t(t0, r, time) {
+        var t_env = parseFloat($("#t-amb").val());
+        return t_env + (t0 - t_env) * Math.exp(-r * time);
+    }
+
+    function calculate() {
+        $("#coffee").text(Math.round(coffee * 100));
+        $("#time").text(time.toFixed(2));
+
+        var t0_coffee = parseFloat($("#t0-coffee").val());
+        var t0_milk = parseFloat($("#t0-milk").val());
+        var r_cm = parseFloat($("#r-cm").val());
+        var r_c = parseFloat($("#r-c").val());
+        var r_m = parseFloat($("#r-m").val());
+
+        var t_coffee = t(t0_coffee, r_c, time);
+        var t_milk = t(t0_milk, r_m, time);
+
+        var t0_mix = t_coffee * coffee + t_milk * (1 - coffee);
+
+        var t_final = t(t0_mix, r_cm, 1 - time);
+
+        $("#t-coffee").text(t_coffee.toFixed(1));
+        $("#t-milk").text(t_milk.toFixed(1));
+        $("#t0-mixture").text(t0_mix.toFixed(1));
+        $("#t-mixture").text(t_final.toFixed(1));
+    }
+
+</script>
+</head>
+<body>
+<h3>The law of heating/cooling </h3>
+$$ T(t) = T_{\mathrm{env}} + (T(0) - T_{\mathrm{env}}) \ e^{-r t} $$
+<h3>System parameters</h3>
+<p>
+Amount of coffee (<span id="coffee"></span>%):
+<div id="slider-coffee" style="width: 30%; margin-left: 10%"></div>
+</p>
+<p>
+Mixing time (<span id="time"></span>):
+<div id="slider-time" style="width: 30%; margin-left: 10%"></div>
+</p>
+<p>\(T(0)\) of coffee: <input type="text" id="t0-coffee" value="100"/></p>
+<p>\(T(0)\) of milk: <input type="text" id="t0-milk" value="5"/></p>
+<p>\(T_{\mathrm{env}}\): <input type="text" id="t-amb" value="20"/></p>
+<p>
+The lower values of \(r\) indicate the slower cooling (due to higher volume).
+</p>
+<p>\(r\) оf mixture (should be a bit less than for coffee, a bit bigger volume): <input type="text" id="r-cm" value="1.0" onchange="calculate()" /></p>
+<p>\(r\) оf coffee (should be the greatest, a little volume): <input type="text" id="r-c" value="1.5" onchange="calculate()" /></p>
+<p>\(r\) оf milk (should be the lowest, a big volume in a box): <input type="text" id="r-m" value="0.5" onchange="calculate()" /></p>
+<h3>Result</h3>
+<p>Temperature of coffee before mixing: <span id="t-coffee"></span></p>
+<p>Temperature of milk before mixing: <span id="t-milk"></span></p>
+<p>Temperature of mixture after mixing: <span id="t0-mixture"></span></p>
+<p>Final temperature of mixture: <span id="t-mixture"></span></p>
+</body>
+</html>
